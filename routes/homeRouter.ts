@@ -34,11 +34,10 @@ router.route("/")
               `SELECT * FROM users
                 WHERE email = $1 AND id != $2`,
               [email,id],
-              (err, results) => {
+              (err:Error, results) => {
                 if (err) {
                   throw err;
                 }
-                //console.log(results.rows);
                 if (results.rows.length > 0) {
                   return res.status(400).send({
                     message: "Email Çoktan Alınmış."
@@ -47,7 +46,7 @@ router.route("/")
                     pool.query(
                       'UPDATE users SET name = $1, email = $2 WHERE id = $3',
                       [name, email, id],
-                      (error, results) => {
+                      (error:Error, results) => {
                         if (error) {
                           return res.status(400).send({ message: "Hata oluştu! ",error });
                         }

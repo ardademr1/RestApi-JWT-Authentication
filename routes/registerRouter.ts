@@ -1,10 +1,9 @@
 import {Request,Response,NextFunction,Router} from "express";
 const router = Router();
 const {generateAccessToken,generateRefreshToken,verifyToken} = require('../middleware/verifyToken');
-
 let ctrlRegister = require('../controller/registerController');
-const {pool} = require("../dbConfig");
-const bcrypt = require("bcrypt");
+import bcrypt from 'bcrypt';
+import {pool} from "../dbConfig";
 
 
 router.get("/register", (req, res) => {

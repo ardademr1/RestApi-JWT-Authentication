@@ -2,6 +2,7 @@
 import Express from 'express';
 const {pool} = require("./dbConfig");
 import errorMiddleware from './middleware/error.middleware';
+import { Client } from 'pg';
 import HttpException from "./exceptions/HttpException";
 
 
@@ -21,7 +22,7 @@ class Server {
     }
 
     private dbConnect() {
-        pool.connect(function (err: Error, client, done) {
+        pool.connect(function (err: Error, client:Client, done) {
           if (err) {
             return console.error('Veri Tabanı Hatası', err.stack)
           }

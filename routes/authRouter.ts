@@ -15,7 +15,7 @@ const hashids = new Hashids(process.env.HASHIDS_SALT);
        let refreshTokens:Array<string> = [];
        let accessTokens:Array<string> = []; //Black list after logout
 
-      router.get("/login",(req,res)=>{
+      router.get("/login",(req: Request,res: Response)=>{
         res.json({ error:{},message: "Lütfen Giriş Yapın",token:{} });
       });
 
@@ -34,7 +34,7 @@ const hashids = new Hashids(process.env.HASHIDS_SALT);
             if (results.rows.length > 0) {
               const user:IUser = results.rows[0];
               console.log(user);
-              bcrypt.compare(req.body.password, user.password, (err, isMatch) => {
+              bcrypt.compare(req.body.password, user.password, (err:Error, isMatch:boolean) => {
                 if (err) {
                   console.log(err);
                 }
