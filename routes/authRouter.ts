@@ -12,8 +12,8 @@ const hashids = new Hashids(process.env.HASHIDS_SALT);
 
 
        //Refresh Token Dizisi
-       let refreshTokens = [];
-       let accessTokens = []; //Black list after logout
+       let refreshTokens:Array<string> = [];
+       let accessTokens:Array<string> = []; //Black list after logout
 
       router.get("/login",(req,res)=>{
         res.json({ error:{},message: "Lütfen Giriş Yapın",token:{} });
@@ -25,7 +25,7 @@ const hashids = new Hashids(process.env.HASHIDS_SALT);
         pool.query(
           `SELECT * FROM users WHERE email = $1`,
           [req.body.email],
-          (err, results) => {
+          (err:Error, results) => {
             if (err) {
               throw err;
             }
@@ -42,8 +42,8 @@ const hashids = new Hashids(process.env.HASHIDS_SALT);
                   //Giriş Başarılı
                   let hashedid = hashids.encode(user.id);
                   user.id=hashedid;
-                  const accessToken=generateAccessToken(user);
-                  const refreshToken=generateRefreshToken(user);
+                  const accessToken:string=generateAccessToken(user);
+                  const refreshToken:string=generateRefreshToken(user);
                   refreshTokens.push(refreshToken);
                   return res.header('authorization',accessToken).send({user: user,accessToken: accessToken,refreshToken: refreshToken});
                 } else {
@@ -70,7 +70,7 @@ const hashids = new Hashids(process.env.HASHIDS_SALT);
           user:{id: req.tokenUser.id, name: req.tokenUser.name }});
       });
       router.delete('/logout', (req: Request,res: Response)=>{
-        const {refreshToken} = req.body.token;
+        const refreshToken:string = req.body.token;
         if(!refreshToken) throw res.sendStatus(400);
         //normalde burada veri tabanından silmek gerekiyor refresh tokenleri
         refreshTokens = refreshTokens.filter( token=> token !== req.body.token)
@@ -80,27 +80,22 @@ const hashids = new Hashids(process.env.HASHIDS_SALT);
       
        //Refreshing a token
        router.post('/token',(req: Request,res: Response,next: NextFunction)=>{
-        const refreshToken = req.body.token //refresh token'i oku
+        const refreshToken:string = req.body.token //refresh token'i oku
         if(refreshToken == null) return res.sendStatus(401)  //boş ise hata yolla
         if(!refreshTokens.includes(refreshToken)) return res.status(403).send({message: "RefreshToken Geçersiz"}) //(refreshTokens)dizide var ise hata yolla
-        //refreshTokens.pop();
+        // refreshToken i verify etmek
         jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET,(err:Error, user:IUser)=>{
           if(err){
           const message=
             err.name ==='JsonWebTokenError'? 'Unauthorized':err.message
           return res.send(createError.Unauthorized(message))}
-          //Burayı Düzelt
-          const user2 = ({
-            id: user.id, 
-            name: user.name,
-            email: user.email,
-            password: user.password
-
-          });
-          const accessToken = generateAccessToken(user2)
-          const refToken=generateRefreshToken(user2)
+          //Object Destructing
+          const {id,name,email,password} = user;
+          const dashboardUser = ({id,name,email,password});
+          const accessToken:string = generateAccessToken(dashboardUser)
+          const refToken:string=generateRefreshToken(dashboardUser)
           refreshTokens.push(refToken);
-          res.json({accessToken: accessToken})
+          res.json({accessToken: accessToken,refreshToken: refToken})
         })
        })
 

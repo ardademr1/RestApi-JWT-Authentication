@@ -62,7 +62,7 @@ router.route("/")
   
           // veri tabanından bütün kullanıcıları görmek
           router.get("/users/list",(req: Express.Request,res: Express.Response)=>{
-              pool.query('SELECT * FROM users ORDER BY id ASC', (error, results) => {
+              pool.query('SELECT * FROM users ORDER BY id ASC', (error: Error, results) => {
                 if (error) {
                   throw error
                 }
