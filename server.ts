@@ -24,7 +24,8 @@ class Server {
     private dbConnect() {
         pool.connect(function (err: Error, client:Client, done) {
           if (err) {
-            return console.error('Veri Tabanı Hatası', err.stack)
+              console.error('Veri tabanına bağlanma hatası!', err)
+              process.exit(-1)
           }
             console.log('Veri Tabanına Bağlanıldı.');
           }); 

@@ -7,22 +7,38 @@ const {pool} = require("../dbConfig");
 
 let ctrlHome = require('../controller/homeController');
 
-
 router.route("/")
       .get(ctrlHome.index).post();
 
       // veri tabanından kullanıcı silme
       router.delete("/users/delete/:id",async(req: Express.Request,res: Express.Response)=>{
             const hid = hashids.decode(req.params.id)
-            const id=hid[0];
-            console.log(id);
-            
-            await pool.query('DELETE FROM users WHERE id = $1', [id], (error, results) => {
-              if (error) {
-                return res.status(400).send({ message: "Hata oluştu! ",error });
+            const id=hid[0];  // hashed id yi sayıya çevirmek
+            if(id==undefined){
+              res.status(400).send({message:`Geçersiz Kullanıcı ID'si`}) 
+            }
+            pool.query(
+              `SELECT * FROM users
+                WHERE id = $1`,
+              [id],
+              (err:Error, results) => {
+                if (err) {
+                  return res.status(400).send({
+                    message: "Kullanıcı Bulunamadı."
+                  });
+                }
+                console.log(results.rows);
+                if (results.rows.length > 0) {
+                  pool.query('DELETE FROM users WHERE id = $1', [id], (error, results) => {
+                    if (error) {
+                      return res.status(400).send({ message: "Hata oluştu! ",error });
+                    }
+                    res.status(200).send({message:`Kullanıcı Silindi! ID: ${id}`})
+                  })
+                }else{return res.status(400).send({ message: "Kullanıcı ID'si Bulunamadı!"});}
               }
-              res.status(200).send(`Kullanıcı Silindi! ID: ${id}`)
-            })
+          );
+            
           });
   
           // veri tabanındaki mevcut bir kullanıcının verilerini güncellenme
@@ -36,7 +52,9 @@ router.route("/")
               [email,id],
               (err:Error, results) => {
                 if (err) {
-                  throw err;
+                  return res.status(400).send({
+                    message: "Hata Oluştu."
+                  });
                 }
                 if (results.rows.length > 0) {
                   return res.status(400).send({
@@ -50,7 +68,11 @@ router.route("/")
                         if (error) {
                           return res.status(400).send({ message: "Hata oluştu! ",error });
                         }
-                        res.status(200).send(`User modified with ID: ${id}`)
+                        if(id==undefined){
+                          res.status(400).send({message:`Kullanıcı ID si geçersiz`})  
+                        }else{
+                          res.status(200).send({message:`Kullanıcı Güncellendi! ID: ${id}`}) 
+                        }
                       }
                     );
                   }

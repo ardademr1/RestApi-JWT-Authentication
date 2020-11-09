@@ -1,7 +1,10 @@
-import {Request,Response,NextFunction,Router} from "express";
+import {Request,Response,Router} from "express";
 const router = Router();
-const {generateAccessToken,generateRefreshToken,verifyToken} = require('../middleware/verifyToken');
-let ctrlRegister = require('../controller/registerController');
+const {generateAccessToken,generateRefreshToken} = require('../middleware/verifyToken');
+import Hashids from 'hashids';
+const hashids = new Hashids(process.env.HASHIDS_SALT);//salt
+import { IUser } from '../interfaces';
+//let ctrlRegister = require('../controller/registerController');
 import bcrypt from 'bcrypt';
 import {pool} from "../dbConfig";
 
@@ -34,7 +37,6 @@ router.post('/registers',async (req:Request,res:Response)=>{
         res.status(400).send({message: "Şifreler Farklı"});
       }
       if(errors.length>0){
-          //res.render("register",{errors});
           res.status(400).send({message: 'Kayıt Başarısız.'});
       }else{
           // kayıt olma başarılı
@@ -60,22 +62,25 @@ router.post('/registers',async (req:Request,res:Response)=>{
                         VALUES ($1, $2, $3)
                         RETURNING id, password`,
                     [name, email, hashedPassword],
-                    (err, results) => {
+                    (err:Error, results) => {
                       if (err) {
                         throw err;
                       }
                       console.log(results.rows);
                       console.log(results.id);
-                      const user = ({
-                        id: results.id, 
+                      const user:IUser = results.rows[0];
+                      let hashedid = hashids.encode(user.id);
+                      user.id=hashedid;
+                      const user2:IUser = ({
+                        id: user.id, 
                         name: name,
                         email: email,
                         password: hashedPassword
 
                       });
-                      const accessToken=generateAccessToken(user);//user koy
-                      const refreshToken=generateRefreshToken(user);
-                      return res.send({user: results.rows,message: "Kayıt Başarılı.",accessToken: accessToken,refreshToken: refreshToken});
+                      const accessToken=generateAccessToken(user2);//user koy
+                      const refreshToken=generateRefreshToken(user2);
+                      return res.send({user2,message: "Kayıt Başarılı.",accessToken: accessToken,refreshToken: refreshToken});
                     }
                   );
                 }

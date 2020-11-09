@@ -13,7 +13,8 @@ const connectionString = 'postgresql://'+
                         process.env.DB_DATABASE;
 
 const pool = new Pool({
-    connectionString: isProduction? process.env.DATABASE_URL:connectionString
+    connectionString: isProduction? process.env.DATABASE_URL:connectionString,
+    connectionTimeoutMillis: 10000
 });
 
 export {pool};
