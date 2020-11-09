@@ -48,6 +48,26 @@ router.route("/")
             const { name, email } = req.body
             pool.query(
               `SELECT * FROM users
+                WHERE id = $1`,
+              [id],
+              (err:Error, results) => {
+                if (err) {
+                  return res.status(400).send({
+                    message: "Hata Oluştu."
+                  });
+                }
+                if (results.rows.length > 0) {
+                  
+                }
+                else{
+                  return res.status(400).send({
+                    message: "Kullanıcı Bulunamadı!"
+                  });
+                }
+              }
+            );
+            pool.query(
+              `SELECT * FROM users
                 WHERE email = $1 AND id != $2`,
               [email,id],
               (err:Error, results) => {
@@ -81,16 +101,51 @@ router.route("/")
                   
           });
   
-          // veri tabanından bütün kullanıcıları görmek
+          // veri tabanından  kullanıcıları görmek
           router.get("/users/list",(req: Express.Request,res: Express.Response)=>{
-              pool.query('SELECT * FROM users ORDER BY id ASC', (error: Error, results) => {
-                if (error) {
-                  throw error
-                }
-                res.status(200).json(results.rows)
-              })
+            //const { page, limit } = req.query;
+            let toplamUserSayisi:number;
+            const page = 2;
+            const limit = 3;
+            const startIndex = (page - 1) * limit;
+            const endIndex = page * limit;
+            const offset = (page - 1) * limit;
             
+            pool.query(`SELECT * FROM users ORDER BY id ASC`, (error: Error, results) => {
+              if (error) {
+                res.status(400).send("Hata Oluştu!");
+                console.log(error);
+              }
+              toplamUserSayisi=results.rows.length;
+              pool.query(`SELECT * FROM users ORDER BY id ASC LIMIT ${limit} OFFSET ${offset}`, (error: Error, results) => {
+                if (error) {
+                  res.status(400).send("Hata Oluştu!");
+                  console.log(error);
+                }
+                if(endIndex<toplamUserSayisi){//user sayısı son indexten büyükse
+                  if(endIndex==limit*Math.floor(toplamUserSayisi/limit)){
+                    results.next = {
+                      page: page+1,
+                      limit: toplamUserSayisi-limit*Math.floor(toplamUserSayisi/limit)
+                    }
+                  }else{
+                    results.next = {
+                      page: page+1,
+                      limit: limit
+                    }
+                  }
+                }
+                if(startIndex>0){
+                  results.previous={
+                    page:page-1,
+                    limit:limit
+                  }
+                }
+                const sayfaSayisi = Math.ceil(toplamUserSayisi/limit);
+                res.status(200).send({page:page,limit:limit,totalPage:sayfaSayisi,ViewingPage:`${page} of ${sayfaSayisi},`,result: results.rows,next:results.next,previous:results.previous})
+              })
+            })
           });
-  
+
 
 module.exports = router

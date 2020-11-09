@@ -14,6 +14,12 @@
     name: string,
     password: string 
   }
+
+  interface IPagination {
+    page: number;
+    limit: number;
+    }
+
   declare global{
       namespace Express{
           interface Request{

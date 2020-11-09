@@ -21,7 +21,6 @@ const hashids = new Hashids(process.env.HASHIDS_SALT);
 
       //Kullanıcı Girişi
       router.post("/login",(req: Request,res: Response)=>{
-        // email , password check coming here soon...
         pool.query(
           `SELECT * FROM users WHERE email = $1`,
           [req.body.email],
@@ -33,7 +32,6 @@ const hashids = new Hashids(process.env.HASHIDS_SALT);
     
             if (results.rows.length > 0) {
               const user:IUser = results.rows[0];
-              console.log(user);
               bcrypt.compare(req.body.password, user.password, (err:Error, isMatch:boolean) => {
                 if (err) {
                   console.log(err);
@@ -88,7 +86,7 @@ const hashids = new Hashids(process.env.HASHIDS_SALT);
           if(err){
           const message=
             err.name ==='JsonWebTokenError'? 'Unauthorized':err.message
-          return res.send(createError.Unauthorized(message))}
+          return res.status(403).send(createError.Unauthorized(message))}
           //Object Destructing
           const {id,name,email,password} = user;
           const dashboardUser = ({id,name,email,password});
