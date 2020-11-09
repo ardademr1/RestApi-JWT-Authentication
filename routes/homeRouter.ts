@@ -103,10 +103,8 @@ router.route("/")
   
           // veri tabanından  kullanıcıları görmek
           router.get("/users/list",(req: Express.Request,res: Express.Response)=>{
-            //const { page, limit } = req.query;
+            const { page, limit } = req.body;
             let toplamUserSayisi:number;
-            const page = 2;
-            const limit = 3;
             const startIndex = (page - 1) * limit;
             const endIndex = page * limit;
             const offset = (page - 1) * limit;
