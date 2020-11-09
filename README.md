@@ -87,7 +87,6 @@
 
    Console:
    ```sh
-   Initialized
    Server Çalışıyor... port= 3000
    Veri Tabanına Bağlanıldı.
    ```
