@@ -44,6 +44,7 @@ class Server {
             this.app.listen(port, () => {
                 resolve(port);
             }).on('error', (err: Object) => reject(err));
+            this.initializeErrorHandling();
         });
     }
 }
