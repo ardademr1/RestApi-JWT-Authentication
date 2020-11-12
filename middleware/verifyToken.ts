@@ -12,13 +12,13 @@ module.exports = {
     verifyToken: (req: Express.Request,res: Express.Response,next: Express.NextFunction)=>{
         const authHeader = req.headers['authorization']
         const token = authHeader
-        if(!token) return res.status(401).send('Access Denied');
+        if(!token) return res.status(401).send({message:'Access Denied'});
         try{
             const tokenData = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET);
             req.tokenUser = tokenData;
             next();
         }catch(err){
-            res.status(400).send('Invalid Token');
+            res.status(400).send({message:'Invalid Token'});
         }
     },
 }
