@@ -23,9 +23,7 @@ router.route("/")
               [id],
               (err:Error, results) => {
                 if (err) {
-                  return res.status(400).send({
-                    message: "Kullanıcı Bulunamadı."
-                  });
+                  throw err;
                 }
                 console.log(results.rows);
                 if (results.rows.length > 0) {
@@ -52,12 +50,39 @@ router.route("/")
               [id],
               (err:Error, results) => {
                 if (err) {
-                  return res.status(400).send({
-                    message: "Hata Oluştu."
-                  });
+                  throw err;
                 }
-                if (results.rows.length > 0) {
-                  
+                if (results.rows.length > 0) { //Kullanıcı Bulunur ise
+                  pool.query(
+                    `SELECT * FROM users
+                      WHERE email = $1 AND id != $2`,
+                    [email,id],
+                    (err:Error, results) => {
+                      if (err) {
+                        throw err;
+                      }
+                      if (results.rows.length > 0) {
+                        return res.status(400).send({
+                          message: "Email Çoktan Alınmış."
+                        });
+                      } else {
+                          pool.query(
+                            'UPDATE users SET name = $1, email = $2 WHERE id = $3',
+                            [name, email, id],
+                            (error:Error, results) => {
+                              if (error) {
+                                throw error;
+                              }
+                              if(id==undefined){
+                                res.status(400).send({message:`Kullanıcı ID si geçersiz`})  
+                              }else{
+                                res.status(200).send({message:`Kullanıcı Güncellendi! ID: ${id}`}) 
+                              }
+                            }
+                          );
+                        }
+                    }
+                );
                 }
                 else{
                   return res.status(400).send({
@@ -65,40 +90,7 @@ router.route("/")
                   });
                 }
               }
-            );
-            pool.query(
-              `SELECT * FROM users
-                WHERE email = $1 AND id != $2`,
-              [email,id],
-              (err:Error, results) => {
-                if (err) {
-                  return res.status(400).send({
-                    message: "Hata Oluştu."
-                  });
-                }
-                if (results.rows.length > 0) {
-                  return res.status(400).send({
-                    message: "Email Çoktan Alınmış."
-                  });
-                } else {
-                    pool.query(
-                      'UPDATE users SET name = $1, email = $2 WHERE id = $3',
-                      [name, email, id],
-                      (error:Error, results) => {
-                        if (error) {
-                          return res.status(400).send({ message: "Hata oluştu! ",error });
-                        }
-                        if(id==undefined){
-                          res.status(400).send({message:`Kullanıcı ID si geçersiz`})  
-                        }else{
-                          res.status(200).send({message:`Kullanıcı Güncellendi! ID: ${id}`}) 
-                        }
-                      }
-                    );
-                  }
-              }
-          );
-                  
+            );    
           });
   
           // veri tabanından  kullanıcıları görmek

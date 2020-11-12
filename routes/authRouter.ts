@@ -34,7 +34,7 @@ const hashids = new Hashids(process.env.HASHIDS_SALT);
               const user:IUser = results.rows[0];
               bcrypt.compare(req.body.password, user.password, (err:Error, isMatch:boolean) => {
                 if (err) {
-                  console.log(err);
+                  throw err;
                 }
                 if (isMatch) {
                   //Giriş Başarılı

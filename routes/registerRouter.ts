@@ -25,19 +25,19 @@ router.post('/registers',async (req:Request,res:Response)=>{
           password2
       });
 
-      let errors=[];
+      let errors:Array<string>=[];
 
       if(!name||!email||!password||!password2){
-          res.status(400).send({message: "Tüm Alanları Doldurun"});
+          errors.push("Tüm Alanları Doldurun");
       }
       if(password.length <6){
-        res.status(400).send({message: "Şifre 6 Karakterde Az Olamaz"});
+        errors.push("Şifre 6 Karakterde Az Olamaz");
       }
       if(password != password2){
-        res.status(400).send({message: "Şifreler Farklı"});
+        errors.push("Şifreler Farklı");
       }
       if(errors.length>0){
-          res.status(400).send({message: 'Kayıt Başarısız.'});
+          res.status(400).send({message: 'Kayıt Başarısız.',hatalar: errors});
       }else{
           // kayıt olma başarılı
           let hashedPassword = await bcrypt.hash(password, 10);
@@ -47,7 +47,7 @@ router.post('/registers',async (req:Request,res:Response)=>{
               `SELECT * FROM users
                 WHERE email = $1`,
               [email],
-              (err, results) => {
+              (err: Error, results) => {
                 if (err) {
                   throw err;
                 }
