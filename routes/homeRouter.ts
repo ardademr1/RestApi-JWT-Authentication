@@ -1,6 +1,7 @@
 import Express,{Request,Response,NextFunction,Router} from "express";
 const router = Router();
 import Hashids from 'hashids';
+import { userInfo } from "os";
 const hashids = new Hashids(process.env.HASHIDS_SALT);
 const {pool} = require("../dbConfig");
 
@@ -43,6 +44,9 @@ router.route("/")
           router.put("/users/update/:id",(req: Express.Request,res: Express.Response)=>{
             const hid = hashids.decode(req.params.id)
             const id=hid[0];
+            if(id==undefined){//error
+              res.status(400).send({message:`Kullanıcı ID si geçersiz`})  
+            }else{
             const { name, email } = req.body
             pool.query(
               `SELECT * FROM users
@@ -57,11 +61,11 @@ router.route("/")
                     `SELECT * FROM users
                       WHERE email = $1 AND id != $2`,
                     [email,id],
-                    (err:Error, results) => {
+                    (err:Error, result) => {
                       if (err) {
                         throw err;
                       }
-                      if (results.rows.length > 0) {
+                      if (result.rows.length > 0) {
                         return res.status(400).send({
                           message: "Email Çoktan Alınmış."
                         });
@@ -73,10 +77,8 @@ router.route("/")
                               if (error) {
                                 throw error;
                               }
-                              if(id==undefined){
-                                res.status(400).send({message:`Kullanıcı ID si geçersiz`})  
-                              }else{
-                                res.status(200).send({message:`Kullanıcı Güncellendi! ID: ${id}`}) 
+                              else{
+                                res.status(200).send({message:`Kullanıcı Güncellendi! ID: ${id}`,result: {id: id,name:name,email:email}}) 
                               }
                             }
                           );
@@ -90,7 +92,8 @@ router.route("/")
                   });
                 }
               }
-            );    
+            );
+          }    
           });
   
           // veri tabanından  kullanıcıları görmek

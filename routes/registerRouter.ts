@@ -4,14 +4,14 @@ const {generateAccessToken,generateRefreshToken} = require('../middleware/verify
 import Hashids from 'hashids';
 const hashids = new Hashids(process.env.HASHIDS_SALT);//salt
 import { IUser } from '../interfaces';
-//let ctrlRegister = require('../controller/registerController');
+//const ctrlRegister = require('../controller/registerController');
 import bcrypt from 'bcrypt';
 import {pool} from "../dbConfig";
 
-
+// register endpoint e istek geldiğinde
 router.get("/register", (req, res) => {
-            res.render("register");
-          });
+          res.json({ error:{},message: "Lütfen Kayıt Olun" });
+});
 
 
 //Veri tabanına Kayıt Eklemek
